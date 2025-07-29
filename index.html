@@ -727,5 +727,75 @@
       window.editRecord = editRecord;
     });
   </script>
+<script>
+async function saveCheckoutData(checkoutData) {
+  const username = "atsho0o";
+  const repo = "Tool-Checkout-System";
+  const filePath = "data/checkout.json";
+  const token = "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"; // ⚠️ Do NOT expose in public!
+
+  const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${filePath}`;
+
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(checkoutData, null, 2))));
+
+  // First, get current SHA of the file (required for update)
+  let sha = null;
+  try {
+    const res = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      sha = data.sha;
+    }
+  } catch (err) {
+    console.warn("File not found, will create new.");
+  }
+
+  // Prepare payload
+  const payload = {
+    message: "Update checkout data",
+    content: content,
+    committer: {
+      name: "Checkout Bot",
+      email: "bot@example.com"
+    }
+  };
+  if (sha) payload.sha = sha;
+
+  // Upload file
+  const uploadRes = await fetch(apiUrl, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (uploadRes.ok) {
+    const result = await uploadRes.json();
+    alert("✅ Data uploaded to GitHub:\n" + result.content.path);
+  } else {
+    alert("❌ Upload failed.");
+    console.error(await uploadRes.text());
+  }
+}
+
+// Example usage:
+document.querySelector("#saveBtn").addEventListener("click", () => {
+  const data = {
+    user: "Ahmed",
+    item: "Hammer",
+    timestamp: new Date().toISOString()
+  };
+  saveCheckoutData(data);
+});
+</script>
+
+  <button id="saveBtn">💾 Save Checkout</button>
 </body>
 </html>
+
