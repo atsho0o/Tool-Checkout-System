@@ -795,7 +795,32 @@ document.querySelector("#saveBtn").addEventListener("click", () => {
 });
 </script>
 
-  <button id="saveBtn">💾 Save Checkout</button>
+  <script>
+    function submitData() {
+      const data = {
+        user: 'Ahmed',
+        tool: 'Hammer',
+        time: new Date().toISOString()
+      };
+
+      fetch('https://save-to-github-api.replit.app/save', {  // change this to your actual Replit URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(r => r.json())
+      .then(r => {
+        if (r.success) {
+          alert('Saved successfully!');
+        } else {
+          alert('Save failed.');
+          console.log(r);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
 
