@@ -786,11 +786,13 @@ async function saveCheckoutData(checkoutData) {
 
 // Example usage:
 document.querySelector("#saveBtn").addEventListener("click", () => {
-  const data = {
-    user: "Ahmed",
-    item: "Hammer",
-    timestamp: new Date().toISOString()
-  };
+const data = {
+  checkoutHistory,
+  users,
+  devices,
+  timestamp: new Date().toISOString()
+};
+
   saveCheckoutData(data);
 });
 </script>
@@ -813,13 +815,18 @@ document.querySelector("#saveBtn").addEventListener("click", () => {
       .then(r => r.json())
       .then(r => {
         if (r.success) {
-          alert('Saved successfully!');
+          alert('✅ Saved successfully!');
         } else {
-          alert('Save failed.');
+          alert('❌ Save failed.');
           console.log(r);
         }
       });
     }
+
+    // Hook to button
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("#saveBtn").addEventListener("click", submitData);
+});
   </script>
 </body>
 </html>
