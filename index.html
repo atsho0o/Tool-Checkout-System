@@ -268,9 +268,70 @@
       font-family: monospace;
     }
     
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--secondary);
+    }
+    .modal-close {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--gray);
+    }
+    .modal-footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .modal-message {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 6px;
+      display: none;
+    }
+    .error-message {
+      background: rgba(231, 76, 60, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+    .success-message {
+      background: rgba(39, 174, 96, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+    
     @media (max-width: 900px) {
       .main-content { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; }
+      .controls { flex-wrap: wrap; }
     }
   </style>
 </head>
@@ -287,9 +348,7 @@
       <div class="controls">
         <button class="btn btn-success" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
         <button class="btn btn-primary" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Export Excel</button>
-          <button class="btn btn-warning" id="saveBtn">
-    <i class="fas fa-cloud-upload-alt"></i> Save to GitHub
-
+        <button class="btn btn-warning" id="saveBtn"><i class="fas fa-cloud-upload-alt"></i> Save to GitHub</button>
       </div>
     </header>
     
@@ -380,7 +439,7 @@
     <div class="github-section">
       <h3><i class="fab fa-github"></i> Made By Eng: Hesham Hagag</h3>
       <ol>
-        <li>Globelink"</li>
+        <li>Globelink</li>
         <li>Mesco</li>
         <li>Euroshipping</li>
         <li>Saco</li>
@@ -399,6 +458,29 @@
     </footer>
   </div>
 
+  <!-- GitHub Token Modal -->
+  <div class="modal" id="githubTokenModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fab fa-github"></i> GitHub Token Required</h3>
+        <span class="modal-close" id="closeModal">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p>To save data to GitHub, you need to provide a personal access token:</p>
+        <div class="form-group">
+          <label for="githubToken">GitHub Personal Access Token</label>
+          <input type="password" class="form-control" id="githubToken" placeholder="Enter your token here">
+          <small>Create a token with <code>repo</code> scope at <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings</a></small>
+        </div>
+        <div class="modal-message" id="tokenMessage"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="cancelToken">Cancel</button>
+        <button class="btn btn-success" id="saveToken">Save Token</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Initialize data storage
     let checkoutHistory = JSON.parse(localStorage.getItem('checkoutHistory')) || [];
@@ -410,6 +492,9 @@
       "Dell XPS 15 Laptop", "MacBook Pro 16\"", "iPad Pro 12.9\"", "Samsung Galaxy Tab S8",
       "Logitech MX Master 3 Mouse", "Apple Magic Keyboard", "Wacom Intuos Pro", "Canon EOS R5 Camera"
     ];
+    
+    // Store GitHub token securely
+    let githubToken = localStorage.getItem('githubToken') || '';
 
     // DOM elements
     const historyTableBody = document.getElementById('historyTableBody');
@@ -421,6 +506,13 @@
     const deviceInput = document.getElementById('deviceInput');
     const userSuggestions = document.getElementById('userSuggestions');
     const deviceSuggestions = document.getElementById('deviceSuggestions');
+    const saveBtn = document.getElementById('saveBtn');
+    const githubTokenModal = document.getElementById('githubTokenModal');
+    const githubTokenInput = document.getElementById('githubToken');
+    const saveTokenBtn = document.getElementById('saveToken');
+    const closeModal = document.getElementById('closeModal');
+    const cancelToken = document.getElementById('cancelToken');
+    const tokenMessage = document.getElementById('tokenMessage');
     
     // Dashboard elements
     const totalDevicesStat = document.getElementById('totalDevicesStat');
@@ -690,6 +782,99 @@
       }
     }
 
+    // GitHub API functions
+    async function saveToGitHub() {
+      if (!githubToken) {
+        // Show token modal if token is not set
+        githubTokenModal.style.display = 'flex';
+        return;
+      }
+      
+      const username = "atsho0o";
+      const repo = "Tool-Checkout-System";
+      const filePath = "data/checkout.json";
+      
+      const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${filePath}`;
+      
+      const data = {
+        checkoutHistory,
+        users,
+        devices,
+        timestamp: new Date().toISOString()
+      };
+      
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+      
+      // First, get current SHA of the file (required for update)
+      let sha = null;
+      try {
+        const res = await fetch(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${githubToken}`,
+            'User-Agent': 'Tool-Checkout-System'
+          }
+        });
+        
+        if (res.ok) {
+          const fileData = await res.json();
+          sha = fileData.sha;
+        } else if (res.status !== 404) {
+          throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
+        }
+      } catch (err) {
+        console.error('Error fetching file info:', err);
+        alert('Failed to fetch file information from GitHub');
+        return;
+      }
+      
+      // Prepare payload
+      const payload = {
+        message: "Update checkout data",
+        content: content,
+        committer: {
+          name: "Tool Checkout System",
+          email: "noreply@example.com"
+        }
+      };
+      
+      if (sha) {
+        payload.sha = sha;
+      }
+      
+      // Upload file
+      try {
+        const uploadRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${githubToken}`,
+            'User-Agent': 'Tool-Checkout-System',
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (uploadRes.ok) {
+          alert('✅ Data successfully saved to GitHub!');
+        } else {
+          const errorData = await uploadRes.json();
+          console.error('GitHub error response:', errorData);
+          
+          if (uploadRes.status === 401) {
+            // Token is invalid or expired
+            tokenMessage.textContent = 'Invalid or expired token. Please provide a new one.';
+            tokenMessage.className = 'modal-message error-message';
+            tokenMessage.style.display = 'block';
+            githubTokenModal.style.display = 'flex';
+          } else {
+            alert(`❌ Failed to save data to GitHub: ${errorData.message || uploadRes.status}`);
+          }
+        }
+      } catch (err) {
+        console.error('Error saving to GitHub:', err);
+        alert('Failed to save data to GitHub');
+      }
+    }
+
     // Initialize the application
     document.addEventListener('DOMContentLoaded', function() {
       // Set current date as default
@@ -700,6 +885,32 @@
       exportPdfBtn.addEventListener('click', exportToPDF);
       exportExcelBtn.addEventListener('click', exportToExcel);
       resetDataLink.addEventListener('click', resetData);
+      saveBtn.addEventListener('click', saveToGitHub);
+      
+      // Token modal events
+      saveTokenBtn.addEventListener('click', () => {
+        const token = githubTokenInput.value.trim();
+        if (token) {
+          githubToken = token;
+          localStorage.setItem('githubToken', token);
+          githubTokenModal.style.display = 'none';
+          githubTokenInput.value = '';
+          tokenMessage.style.display = 'none';
+          saveToGitHub();
+        } else {
+          tokenMessage.textContent = 'Please enter a valid GitHub token';
+          tokenMessage.className = 'modal-message error-message';
+          tokenMessage.style.display = 'block';
+        }
+      });
+      
+      closeModal.addEventListener('click', () => {
+        githubTokenModal.style.display = 'none';
+      });
+      
+      cancelToken.addEventListener('click', () => {
+        githubTokenModal.style.display = 'none';
+      });
       
       // Auto-suggest functionality
       userInput.addEventListener('input', () => {
@@ -730,107 +941,5 @@
       window.editRecord = editRecord;
     });
   </script>
-<script>
-async function saveCheckoutData(checkoutData) {
-  const username = "atsho0o";
-  const repo = "Tool-Checkout-System";
-  const filePath = "data/checkout.json";
-  const token = "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"; // ⚠️ Do NOT expose in public!
-
-  const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${filePath}`;
-
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(checkoutData, null, 2))));
-
-  // First, get current SHA of the file (required for update)
-  let sha = null;
-  try {
-    const res = await fetch(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      sha = data.sha;
-    }
-  } catch (err) {
-    console.warn("File not found, will create new.");
-  }
-
-  // Prepare payload
-  const payload = {
-    message: "Update checkout data",
-    content: content,
-    committer: {
-      name: "Checkout Bot",
-      email: "bot@example.com"
-    }
-  };
-  if (sha) payload.sha = sha;
-
-  // Upload file
-  const uploadRes = await fetch(apiUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (uploadRes.ok) {
-    const result = await uploadRes.json();
-    alert("✅ Data uploaded to GitHub:\n" + result.content.path);
-  } else {
-    alert("❌ Upload failed.");
-    console.error(await uploadRes.text());
-  }
-}
-
-// Example usage:
-document.querySelector("#saveBtn").addEventListener("click", () => {
-const data = {
-  checkoutHistory,
-  users,
-  devices,
-  timestamp: new Date().toISOString()
-};
-
-  saveCheckoutData(data);
-});
-</script>
-
-  <script>
-    function submitData() {
-      const data = {
-        user: 'Ahmed',
-        tool: 'Hammer',
-        time: new Date().toISOString()
-      };
-
-      fetch('https://workspace.replit.app/save', {  // change this to your actual Replit URL
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-      .then(r => r.json())
-      .then(r => {
-        if (r.success) {
-          alert('✅ Saved successfully!');
-        } else {
-          alert('❌ Save failed.');
-          console.log(r);
-        }
-      });
-    }
-
-    // Hook to button
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("#saveBtn").addEventListener("click", submitData);
-});
-  </script>
 </body>
 </html>
-
