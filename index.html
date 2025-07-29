@@ -809,16 +809,23 @@
       alert('Equipment checked out successfully!');
     }
 
-    function saveToGoogleSheets(record) {
-      // In a real implementation, this would call the Google Sheets API
-      console.log('Saving to Google Sheets:', record);
-      console.log('Sheet ID:', sheetId);
-      
-      // Simulate API call with delay
-      setTimeout(() => {
-        console.log('Successfully saved to Google Sheets');
-      }, 1000);
+function saveToGoogleSheets(record) {
+  fetch('https://script.google.com/macros/s/AKfycbwHyghDQUEwTYbclkJqIuyWfdWWV64spCn7rD_lnkj7Hv_-BZkpgmA3J7H6AShrJpdGmA/exec', {
+    method: 'POST',
+    body: JSON.stringify(record),
+    headers: {
+      'Content-Type': 'application/json'
     }
+  })
+  .then(res => res.text())
+  .then(data => {
+    console.log('Google Sheet Response:', data);
+  })
+  .catch(err => {
+    console.error('Error saving to Google Sheets:', err);
+  });
+}
+
 
     function returnItem(index) {
       if (confirm('Mark this item as returned?')) {
