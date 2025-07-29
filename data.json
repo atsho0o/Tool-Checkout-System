@@ -1,14 +1,4 @@
 {
-  "message": "Updated API test",
-  "timestamp": "2025-07-29T11:25:00Z",
-  "status": "fully_operational",
-  "data": {
-    "tools": [
-      "hammer",
-      "screwdriver",
-      "wrench",
-      "drill"
-    ],
-    "checkout_status": "available"
-  }
+  "test": "cors_check",
+  "timestamp": "2025-07-29"
 }
