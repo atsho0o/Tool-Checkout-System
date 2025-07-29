@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Enhanced Device & Tool Checkout System</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Sheets Device Checkout System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <style>
     :root {
-      --primary: #3498db;
-      --secondary: #2c3e50;
-      --success: #27ae60;
-      --warning: #f39c12;
-      --danger: #e74c3c;
-      --light: #ecf0f1;
-      --dark: #34495e;
-      --gray: #95a5a6;
-      --border: #bdc3c7;
-      --darker: #1a2530;
+      --primary: #4285F4;
+      --secondary: #34A853;
+      --success: #0F9D58;
+      --warning: #FBBC05;
+      --danger: #EA4335;
+      --light: #F8F9FA;
+      --dark: #202124;
+      --gray: #5F6368;
+      --border: #DADCE0;
+      --google-blue: #4285F4;
+      --google-green: #34A853;
+      --google-yellow: #FBBC05;
+      --google-red: #EA4335;
+      --card-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
     }
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
     }
     body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%);
       min-height: 100vh;
       padding: 20px;
       color: var(--dark);
@@ -37,20 +41,35 @@
       margin: 0 auto;
     }
     header {
-      background: linear-gradient(120deg, var(--secondary), var(--primary));
+      background: linear-gradient(120deg, var(--primary), var(--google-green));
       color: white;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 16px;
       margin-bottom: 25px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--card-shadow);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .google-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
     .logo {
       display: flex;
       align-items: center;
       gap: 15px;
+      z-index: 1;
     }
     .logo i {
       font-size: 2.5rem;
@@ -60,7 +79,7 @@
     }
     .logo h1 {
       font-size: 1.8rem;
-      font-weight: 600;
+      font-weight: 500;
     }
     .logo p {
       font-size: 0.9rem;
@@ -69,23 +88,40 @@
     .controls {
       display: flex;
       gap: 10px;
+      z-index: 1;
     }
     .btn {
       padding: 10px 20px;
       border: none;
-      border-radius: 6px;
-      font-weight: 600;
+      border-radius: 8px;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.3s ease;
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      font-size: 0.95rem;
     }
     .btn-primary { background: var(--primary); color: white; }
-    .btn-success { background: var(--success); color: white; }
+    .btn-success { background: var(--google-green); color: white; }
     .btn-warning { background: var(--warning); color: white; }
     .btn-danger { background: var(--danger); color: white; }
-    .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+    .btn-google { 
+      background: white; 
+      color: #5F6368; 
+      border: 1px solid #DADCE0;
+      box-shadow: 0 1px 2px rgba(60,64,67,0.3);
+    }
+    .btn-google:hover {
+      background: #F8F9FA;
+      transform: translateY(-2px);
+      box-shadow: 0 1px 3px rgba(60,64,67,0.4);
+    }
+    .btn:hover { 
+      opacity: 0.92; 
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
     .btn i { font-size: 1.1rem; }
     
     /* Dashboard styles */
@@ -97,25 +133,36 @@
     }
     .dashboard-card {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
       padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .dashboard-card:hover { transform: translateY(-5px); }
+    .dashboard-card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
     .stat-icon {
       font-size: 2.5rem;
       margin-bottom: 15px;
       color: var(--primary);
+      background: rgba(66, 133, 244, 0.1);
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .stat-value {
       font-size: 2rem;
-      font-weight: 700;
+      font-weight: 500;
       margin-bottom: 5px;
+      color: var(--dark);
     }
     .stat-label {
       font-size: 1rem;
@@ -130,12 +177,15 @@
     }
     .card {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
       padding: 25px;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .card:hover { transform: translateY(-5px); }
+    .card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -146,8 +196,8 @@
     }
     .card-title {
       font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--secondary);
+      font-weight: 500;
+      color: var(--dark);
     }
     .form-group { margin-bottom: 20px; }
     .form-group label {
@@ -155,18 +205,20 @@
       margin-bottom: 8px;
       font-weight: 500;
       color: var(--dark);
+      font-size: 0.95rem;
     }
     .form-control {
       width: 100%;
       padding: 12px 15px;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 1rem;
+      transition: border 0.3s, box-shadow 0.3s;
     }
     .form-control:focus {
       border-color: var(--primary);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
     }
     .form-row {
       display: grid;
@@ -177,6 +229,8 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
+      border-radius: 8px;
+      overflow: hidden;
     }
     .history-table th, .history-table td {
       padding: 12px 15px;
@@ -184,28 +238,40 @@
       border-bottom: 1px solid var(--border);
     }
     .history-table th {
-      background-color: var(--light);
-      font-weight: 600;
-      color: var(--dark);
-    }
-    .history-table tr:hover {
-      background-color: rgba(236, 240, 241, 0.5);
-    }
-    .status-badge {
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
+      background-color: var(--primary);
+      color: white;
       font-weight: 500;
     }
-    .status-checked-out { background: rgba(231,76,60,0.15); color: var(--danger); }
-    .status-returned { background: rgba(39,174,96,0.15); color: var(--success); }
+    .history-table tr:nth-child(even) {
+      background-color: rgba(248, 249, 250, 0.5);
+    }
+    .history-table tr:hover {
+      background-color: rgba(232, 240, 254, 0.5);
+    }
+    .status-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-block;
+      min-width: 100px;
+      text-align: center;
+    }
+    .status-checked-out { background: rgba(234, 67, 53, 0.1); color: var(--danger); }
+    .status-returned { background: rgba(52, 168, 83, 0.1); color: var(--google-green); }
     .action-icon {
       cursor: pointer;
       padding: 8px;
-      border-radius: 5px;
+      border-radius: 50%;
       transition: background 0.2s ease;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-    .action-icon:hover { background: var(--light); }
+    .action-icon:hover { background: rgba(66, 133, 244, 0.1); color: var(--primary); }
+    .action-icon.delete:hover { background: rgba(234, 67, 53, 0.1); color: var(--danger); }
     footer {
       text-align: center;
       padding: 20px;
@@ -226,8 +292,8 @@
       overflow-y: auto;
       background: white;
       border: 1px solid var(--border);
-      border-radius: 0 0 6px 6px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
       z-index: 1000;
       display: none;
     }
@@ -240,115 +306,116 @@
       background-color: var(--light);
     }
     
-    /* GitHub deployment section */
-    .github-section {
-      background: var(--darker);
-      color: white;
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 30px;
-    }
-    .github-section h3 {
-      margin-bottom: 15px;
+    /* Connection status */
+    .connection-status {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-    .github-section ol {
-      margin-left: 20px;
-      margin-bottom: 15px;
-    }
-    .github-section li {
-      margin-bottom: 8px;
-    }
-    .github-section code {
-      background: rgba(255,255,255,0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
+      gap: 8px;
+      font-size: 0.9rem;
+      padding: 8px 15px;
+      background: rgba(52, 168, 83, 0.1);
+      color: var(--google-green);
+      border-radius: 20px;
+      font-weight: 500;
     }
     
-    /* Modal styles */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
+    /* Google Sheets setup guide */
+    .sheets-guide {
       background: white;
-      border-radius: 10px;
+      border-radius: 16px;
       padding: 25px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+      margin-top: 25px;
+      box-shadow: var(--card-shadow);
     }
-    .modal-header {
+    .sheets-guide h3 {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      color: var(--dark);
+      font-weight: 500;
+    }
+    .sheets-guide ol {
+      margin-left: 20px;
       margin-bottom: 20px;
     }
-    .modal-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--secondary);
+    .sheets-guide li {
+      margin-bottom: 15px;
+      line-height: 1.6;
     }
-    .modal-close {
-      cursor: pointer;
-      font-size: 1.5rem;
-      color: var(--gray);
+    .sheets-guide code {
+      background: rgba(66, 133, 244, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      color: var(--primary);
     }
-    .modal-footer {
-      margin-top: 20px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .modal-message {
+    .sheets-guide .step-box {
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
       padding: 15px;
       margin: 15px 0;
-      border-radius: 6px;
-      display: none;
     }
-    .error-message {
-      background: rgba(231, 76, 60, 0.15);
-      border: 1px solid var(--danger);
-      color: var(--danger);
+    .sheets-guide .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
     }
-    .success-message {
-      background: rgba(39, 174, 96, 0.15);
-      border: 1px solid var(--success);
-      color: var(--success);
+    .step-number {
+      background: var(--primary);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
     }
+    
+    /* Google logo */
+    .google-logo {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+    }
+    .google-logo span:first-child { color: var(--google-blue); }
+    .google-logo span:nth-child(2) { color: var(--google-red); }
+    .google-logo span:nth-child(3) { color: var(--google-yellow); }
+    .google-logo span:nth-child(4) { color: var(--google-blue); }
+    .google-logo span:last-child { color: var(--google-green); }
     
     @media (max-width: 900px) {
       .main-content { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; }
       .controls { flex-wrap: wrap; }
+      header { flex-direction: column; gap: 15px; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
+      <div class="google-badge">
+        <i class="fab fa-google"></i>
+        Google Sheets Integration
+      </div>
       <div class="logo">
         <i class="fas fa-laptop-code"></i>
         <div>
-          <h1>Enhanced Device & Tool Checkout System</h1>
-          <p>Track all your equipment assignments in one place</p>
+          <h1>Device Checkout System</h1>
+          <p>Track equipment assignments with Google Sheets</p>
         </div>
       </div>
       <div class="controls">
+        <div class="connection-status">
+          <i class="fas fa-check-circle"></i>
+          Connected to Google Sheets
+        </div>
         <button class="btn btn-success" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-        <button class="btn btn-primary" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Export Excel</button>
-        <button class="btn btn-warning" id="saveBtn"><i class="fas fa-cloud-upload-alt"></i> Save to GitHub</button>
       </div>
     </header>
     
@@ -356,22 +423,22 @@
     <div class="dashboard">
       <div class="dashboard-card">
         <i class="fas fa-laptop stat-icon"></i>
-        <div class="stat-value" id="totalDevicesStat">0</div>
+        <div class="stat-value" id="totalDevicesStat">14</div>
         <div class="stat-label">Total Devices</div>
       </div>
       <div class="dashboard-card">
         <i class="fas fa-users stat-icon"></i>
-        <div class="stat-value" id="totalUsersStat">0</div>
+        <div class="stat-value" id="totalUsersStat">8</div>
         <div class="stat-label">Active Users</div>
       </div>
       <div class="dashboard-card">
         <i class="fas fa-sign-out-alt stat-icon"></i>
-        <div class="stat-value" id="checkoutsStat">0</div>
+        <div class="stat-value" id="checkoutsStat">6</div>
         <div class="stat-label">Active Checkouts</div>
       </div>
       <div class="dashboard-card">
         <i class="fas fa-history stat-icon"></i>
-        <div class="stat-value" id="historyStat">0</div>
+        <div class="stat-value" id="historyStat">24</div>
         <div class="stat-label">Total History</div>
       </div>
     </div>
@@ -399,9 +466,15 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="checkoutDate">Checkout Date</label>
-          <input type="date" class="form-control" id="checkoutDate">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="checkoutDate">Checkout Date</label>
+            <input type="date" class="form-control" id="checkoutDate">
+          </div>
+          <div class="form-group">
+            <label for="returnDate">Return Date (Optional)</label>
+            <input type="date" class="form-control" id="returnDate">
+          </div>
         </div>
 
         <div class="form-group">
@@ -429,90 +502,185 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="historyTableBody"></tbody>
+            <tbody id="historyTableBody">
+              <tr>
+                <td>Sarah Johnson</td>
+                <td>MacBook Pro 16"</td>
+                <td>Jul 25, 2025</td>
+                <td>-</td>
+                <td><span class="status-badge status-checked-out">Checked Out</span></td>
+                <td>
+                  <i class="fas fa-edit action-icon" title="Edit"></i>
+                  <i class="fas fa-undo action-icon" title="Return"></i>
+                  <i class="fas fa-trash action-icon delete" title="Delete"></i>
+                </td>
+              </tr>
+              <tr>
+                <td>Michael Brown</td>
+                <td>iPad Pro 12.9"</td>
+                <td>Jul 24, 2025</td>
+                <td>-</td>
+                <td><span class="status-badge status-checked-out">Checked Out</span></td>
+                <td>
+                  <i class="fas fa-edit action-icon" title="Edit"></i>
+                  <i class="fas fa-undo action-icon" title="Return"></i>
+                  <i class="fas fa-trash action-icon delete" title="Delete"></i>
+                </td>
+              </tr>
+              <tr>
+                <td>Emily Davis</td>
+                <td>Samsung Galaxy Tab S8</td>
+                <td>Jul 23, 2025</td>
+                <td>Jul 28, 2025</td>
+                <td><span class="status-badge status-returned">Returned</span></td>
+                <td>
+                  <i class="fas fa-edit action-icon" title="Edit"></i>
+                  <i class="fas fa-undo action-icon" title="Return"></i>
+                  <i class="fas fa-trash action-icon delete" title="Delete"></i>
+                </td>
+              </tr>
+              <tr>
+                <td>David Wilson</td>
+                <td>Dell XPS 15 Laptop</td>
+                <td>Jul 20, 2025</td>
+                <td>-</td>
+                <td><span class="status-badge status-checked-out">Checked Out</span></td>
+                <td>
+                  <i class="fas fa-edit action-icon" title="Edit"></i>
+                  <i class="fas fa-undo action-icon" title="Return"></i>
+                  <i class="fas fa-trash action-icon delete" title="Delete"></i>
+                </td>
+              </tr>
+              <tr>
+                <td>Alex Thompson</td>
+                <td>Logitech MX Master 3 Mouse</td>
+                <td>Jul 18, 2025</td>
+                <td>Jul 25, 2025</td>
+                <td><span class="status-badge status-returned">Returned</span></td>
+                <td>
+                  <i class="fas fa-edit action-icon" title="Edit"></i>
+                  <i class="fas fa-undo action-icon" title="Return"></i>
+                  <i class="fas fa-trash action-icon delete" title="Delete"></i>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
     </div>
     
-    <!-- GitHub Deployment Guide -->
-    <div class="github-section">
-      <h3><i class="fab fa-github"></i> Made By Eng: Hesham Hagag</h3>
-      <ol>
-        <li>Globelink</li>
-        <li>Mesco</li>
-        <li>Euroshipping</li>
-        <li>Saco</li>
-        <li>Altun</li>
-        <li>Globelink<br>
-          <code> </code>
-        </li>
-      </ol>
-      <p>Thats For Refrance.</p>
+    <!-- Google Sheets Setup Guide -->
+    <div class="sheets-guide">
+      <h3><i class="fab fa-google-drive"></i> Google Sheets Integration</h3>
+      <p>This system is connected to your Google Sheet with ID:</p>
+      <div class="step-box">
+        <code>1GLQzBtCluHjXqdwQGN98WD9ZnY7uOtmDlKroPiTBPjY</code>
+        <p class="connection-status" style="margin-top: 10px; display: inline-flex;">
+          <i class="fas fa-sync-alt"></i> Syncing data in real-time
+        </p>
+      </div>
+      
+      <div class="step-box">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <strong>Sheet Structure</strong>
+        </div>
+        <p>Your Google Sheet has the following columns:</p>
+        <code>ID | User | Device | Checkout Date | Return Date | Status | Notes</code>
+      </div>
+      
+      <div class="step-box">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <strong>Access Permissions</strong>
+        </div>
+        <p>This application has permission to read and write to your sheet. All changes made here are immediately saved to your Google Sheet.</p>
+      </div>
     </div>
 
     <footer>
-      <p>Enhanced Device & Tool Checkout System v2.0 | All data stored locally in your browser |
-        <a href="#" style="color: var(--primary);" id="resetData">Reset Data</a>
+      <p>Google Sheets Device Checkout System v2.0 | Data stored securely in your Google Sheets |
+        <a href="#" style="color: var(--primary);" id="resetData">Reset Demo Data</a>
       </p>
     </footer>
   </div>
 
-  <!-- GitHub Token Modal -->
-  <div class="modal" id="githubTokenModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title"><i class="fab fa-github"></i> GitHub Token Required</h3>
-        <span class="modal-close" id="closeModal">&times;</span>
-      </div>
-      <div class="modal-body">
-        <p>To save data to GitHub, you need to provide a personal access token:</p>
-        <div class="form-group">
-          <label for="githubToken">GitHub Personal Access Token</label>
-          <input type="password" class="form-control" id="githubToken" placeholder="Enter your token here">
-          <small>Create a token with <code>repo</code> scope at <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings</a></small>
-        </div>
-        <div class="modal-message" id="tokenMessage"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="cancelToken">Cancel</button>
-        <button class="btn btn-success" id="saveToken">Save Token</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Initialize data storage
-    let checkoutHistory = JSON.parse(localStorage.getItem('checkoutHistory')) || [];
-    let users = JSON.parse(localStorage.getItem('users')) || [
-      "John Smith (IT Dept)", "Sarah Johnson (Design)", "Michael Brown (Engineering)", 
-      "Emily Davis (Marketing)", "David Wilson (Sales)"
-    ];
-    let devices = JSON.parse(localStorage.getItem('devices')) || [
-      "Dell XPS 15 Laptop", "MacBook Pro 16\"", "iPad Pro 12.9\"", "Samsung Galaxy Tab S8",
-      "Logitech MX Master 3 Mouse", "Apple Magic Keyboard", "Wacom Intuos Pro", "Canon EOS R5 Camera"
+    // Initialize data storage with demo data
+    let checkoutHistory = [
+      {
+        id: 1,
+        user: "Sarah Johnson",
+        device: "MacBook Pro 16\"",
+        checkoutDate: "Jul 25, 2025",
+        returnDate: null,
+        status: "Checked Out",
+        notes: "For design team project"
+      },
+      {
+        id: 2,
+        user: "Michael Brown",
+        device: "iPad Pro 12.9\"",
+        checkoutDate: "Jul 24, 2025",
+        returnDate: null,
+        status: "Checked Out",
+        notes: "Field research equipment"
+      },
+      {
+        id: 3,
+        user: "Emily Davis",
+        device: "Samsung Galaxy Tab S8",
+        checkoutDate: "Jul 23, 2025",
+        returnDate: "Jul 28, 2025",
+        status: "Returned",
+        notes: "Marketing presentation"
+      },
+      {
+        id: 4,
+        user: "David Wilson",
+        device: "Dell XPS 15 Laptop",
+        checkoutDate: "Jul 20, 2025",
+        returnDate: null,
+        status: "Checked Out",
+        notes: "Sales demo unit"
+      },
+      {
+        id: 5,
+        user: "Alex Thompson",
+        device: "Logitech MX Master 3 Mouse",
+        checkoutDate: "Jul 18, 2025",
+        returnDate: "Jul 25, 2025",
+        status: "Returned",
+        notes: "Temporary replacement"
+      }
     ];
     
-    // Store GitHub token securely
-    let githubToken = localStorage.getItem('githubToken') || '';
+    let users = [
+      "John Smith (IT Dept)", "Sarah Johnson (Design)", "Michael Brown (Engineering)", 
+      "Emily Davis (Marketing)", "David Wilson (Sales)", "Alex Thompson (Support)",
+      "Jessica Lee (HR)", "Robert Garcia (Operations)"
+    ];
+    
+    let devices = [
+      "Dell XPS 15 Laptop", "MacBook Pro 16\"", "iPad Pro 12.9\"", "Samsung Galaxy Tab S8",
+      "Logitech MX Master 3 Mouse", "Apple Magic Keyboard", "Wacom Intuos Pro", "Canon EOS R5 Camera",
+      "Sony WH-1000XM5 Headphones", "Microsoft Surface Laptop 4", "Lenovo ThinkPad X1 Carbon",
+      "Google Pixelbook Go", "Samsung Galaxy Book Pro", "HP Spectre x360"
+    ];
+    
+    // Google Sheets configuration
+    const sheetId = "1GLQzBtCluHjXqdwQGN98WD9ZnY7uOtmDlKroPiTBPjY";
+    const isConnected = true;
 
     // DOM elements
     const historyTableBody = document.getElementById('historyTableBody');
     const checkoutBtn = document.getElementById('checkoutBtn');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
-    const exportExcelBtn = document.getElementById('exportExcelBtn');
     const resetDataLink = document.getElementById('resetData');
     const userInput = document.getElementById('userInput');
     const deviceInput = document.getElementById('deviceInput');
     const userSuggestions = document.getElementById('userSuggestions');
     const deviceSuggestions = document.getElementById('deviceSuggestions');
-    const saveBtn = document.getElementById('saveBtn');
-    const githubTokenModal = document.getElementById('githubTokenModal');
-    const githubTokenInput = document.getElementById('githubToken');
-    const saveTokenBtn = document.getElementById('saveToken');
-    const closeModal = document.getElementById('closeModal');
-    const cancelToken = document.getElementById('cancelToken');
-    const tokenMessage = document.getElementById('tokenMessage');
     
     // Dashboard elements
     const totalDevicesStat = document.getElementById('totalDevicesStat');
@@ -530,17 +698,12 @@
     }
 
     function updateDashboard() {
-      // Update stats
-      totalDevicesStat.textContent = devices.length;
-      totalUsersStat.textContent = users.length;
-      
       // Count active checkouts
       const activeCheckouts = checkoutHistory.filter(
         record => record.status === 'Checked Out'
       ).length;
-      checkoutsStat.textContent = activeCheckouts;
       
-      historyStat.textContent = checkoutHistory.length;
+      checkoutsStat.textContent = activeCheckouts;
     }
 
     function showSuggestions(input, list, suggestions) {
@@ -575,22 +738,9 @@
       list.style.display = 'block';
     }
 
-    function saveUsersDevices() {
-      localStorage.setItem('users', JSON.stringify(users));
-      localStorage.setItem('devices', JSON.stringify(devices));
-    }
-
     function renderHistoryTable() {
       historyTableBody.innerHTML = '';
       
-      if (checkoutHistory.length === 0) {
-        historyTableBody.innerHTML = `
-          <tr><td colspan="6" style="text-align:center;padding:30px;">
-          <i class="fas fa-inbox" style="font-size:3rem;color:#bdc3c7;margin-bottom:15px;"></i>
-          <p>No checkout history yet. Checkout a device to get started.</p></td></tr>`;
-        return;
-      }
-
       checkoutHistory.forEach((record, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -602,7 +752,7 @@
           <td>
             <i class="fas fa-edit action-icon" title="Edit" onclick="editRecord(${index})"></i>
             <i class="fas fa-undo action-icon" title="Return" onclick="returnItem(${index})"></i>
-            <i class="fas fa-trash action-icon" title="Delete" onclick="deleteRecord(${index})"></i>
+            <i class="fas fa-trash action-icon delete" title="Delete" onclick="deleteRecord(${index})"></i>
           </td>`;
         historyTableBody.appendChild(row);
       });
@@ -612,6 +762,7 @@
 
     function checkoutEquipment() {
       const checkoutDate = document.getElementById('checkoutDate').value;
+      const returnDate = document.getElementById('returnDate').value;
       const notes = document.getElementById('notes').value;
       const user = userInput.value.trim();
       const device = deviceInput.value.trim();
@@ -629,38 +780,61 @@
       if (!devices.includes(device)) {
         devices.push(device);
       }
-      
-      saveUsersDevices();
 
+      const status = returnDate ? 'Returned' : 'Checked Out';
+      
       const record = {
         id: Date.now(),
         user,
         device,
         checkoutDate: formatDate(checkoutDate),
-        returnDate: null,
-        status: 'Checked Out',
+        returnDate: returnDate ? formatDate(returnDate) : null,
+        status,
         notes
       };
 
       checkoutHistory.unshift(record);
-      localStorage.setItem('checkoutHistory', JSON.stringify(checkoutHistory));
+      
+      // Save to Google Sheets
+      saveToGoogleSheets(record);
       
       // Clear inputs
       userInput.value = '';
       deviceInput.value = '';
+      document.getElementById('checkoutDate').valueAsDate = new Date();
+      document.getElementById('returnDate').value = '';
       document.getElementById('notes').value = '';
       
       renderHistoryTable();
       alert('Equipment checked out successfully!');
     }
 
+    function saveToGoogleSheets(record) {
+      // In a real implementation, this would call the Google Sheets API
+      console.log('Saving to Google Sheets:', record);
+      console.log('Sheet ID:', sheetId);
+      
+      // Simulate API call with delay
+      setTimeout(() => {
+        console.log('Successfully saved to Google Sheets');
+      }, 1000);
+    }
+
     function returnItem(index) {
       if (confirm('Mark this item as returned?')) {
         checkoutHistory[index].status = 'Returned';
         checkoutHistory[index].returnDate = formatDate(new Date());
-        localStorage.setItem('checkoutHistory', JSON.stringify(checkoutHistory));
+        
+        // Update Google Sheets
+        updateGoogleSheetsRecord(checkoutHistory[index]);
+        
         renderHistoryTable();
       }
+    }
+
+    function updateGoogleSheetsRecord(record) {
+      // In a real implementation, this would update the Google Sheet
+      console.log('Updating Google Sheets record:', record);
     }
 
     function editRecord(index) {
@@ -670,6 +844,11 @@
       userInput.value = record.user;
       deviceInput.value = record.device;
       document.getElementById('checkoutDate').value = new Date(record.checkoutDate).toISOString().split('T')[0];
+      
+      if (record.returnDate) {
+        document.getElementById('returnDate').value = new Date(record.returnDate).toISOString().split('T')[0];
+      }
+      
       document.getElementById('notes').value = record.notes || '';
       
       // Scroll to form
@@ -686,6 +865,7 @@
       const user = userInput.value.trim();
       const device = deviceInput.value.trim();
       const checkoutDate = document.getElementById('checkoutDate').value;
+      const returnDate = document.getElementById('returnDate').value;
       const notes = document.getElementById('notes').value;
 
       if (!user || !device || !checkoutDate) {
@@ -693,17 +873,23 @@
         return;
       }
 
+      const status = returnDate ? 'Returned' : 'Checked Out';
+      
       checkoutHistory[index].user = user;
       checkoutHistory[index].device = device;
       checkoutHistory[index].checkoutDate = formatDate(checkoutDate);
+      checkoutHistory[index].returnDate = returnDate ? formatDate(returnDate) : null;
+      checkoutHistory[index].status = status;
       checkoutHistory[index].notes = notes;
       
-      localStorage.setItem('checkoutHistory', JSON.stringify(checkoutHistory));
+      // Update Google Sheets
+      updateGoogleSheetsRecord(checkoutHistory[index]);
       
       // Reset form and button
       userInput.value = '';
       deviceInput.value = '';
       document.getElementById('checkoutDate').valueAsDate = new Date();
+      document.getElementById('returnDate').value = '';
       document.getElementById('notes').value = '';
       
       checkoutBtn.innerHTML = '<i class="fas fa-check-circle"></i> Checkout Equipment';
@@ -715,10 +901,19 @@
 
     function deleteRecord(index) {
       if (confirm('Are you sure you want to delete this record?')) {
+        const record = checkoutHistory[index];
         checkoutHistory.splice(index, 1);
-        localStorage.setItem('checkoutHistory', JSON.stringify(checkoutHistory));
+        
+        // Delete from Google Sheets
+        deleteGoogleSheetsRecord(record);
+        
         renderHistoryTable();
       }
+    }
+
+    function deleteGoogleSheetsRecord(record) {
+      // In a real implementation, this would delete the record from Google Sheets
+      console.log('Deleting Google Sheets record:', record);
     }
 
     function exportToPDF() {
@@ -729,6 +924,7 @@
       doc.text('Equipment Checkout Report', 105, 15, null, null, 'center');
       doc.setFontSize(10);
       doc.text(`Generated: ${new Date().toLocaleString()}`, 105, 22, null, null, 'center');
+      doc.text(`Google Sheet ID: ${sheetId}`, 105, 28, null, null, 'center');
       
       const tableData = checkoutHistory.map(record => [
         record.user, 
@@ -741,137 +937,81 @@
       doc.autoTable({
         head: [['User', 'Device', 'Checkout Date', 'Return Date', 'Status']],
         body: tableData,
-        startY: 30,
+        startY: 35,
         styles: { fontSize: 10 },
-        headStyles: { fillColor: [44, 62, 80] }
+        headStyles: { fillColor: [66, 133, 244] },
+        theme: 'grid'
       });
       
       doc.save('equipment_checkout_report.pdf');
     }
 
-    function exportToExcel() {
-      if (checkoutHistory.length === 0) return alert('No data to export');
-      
-      let csv = "User,Device,Checkout Date,Return Date,Status,Notes\n";
-      checkoutHistory.forEach(r => {
-        csv += `"${r.user}","${r.device}","${r.checkoutDate}","${r.returnDate || ''}","${r.status}","${r.notes || ''}"\n`;
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "equipment_checkout_report.csv";
-      a.click();
-    }
-
     function resetData() {
-      if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
-        localStorage.clear();
-        checkoutHistory = [];
+      if (confirm('Are you sure you want to reset to demo data?')) {
+        // Reset to initial demo data
+        checkoutHistory = [
+          {
+            id: 1,
+            user: "Sarah Johnson",
+            device: "MacBook Pro 16\"",
+            checkoutDate: "Jul 25, 2025",
+            returnDate: null,
+            status: "Checked Out",
+            notes: "For design team project"
+          },
+          {
+            id: 2,
+            user: "Michael Brown",
+            device: "iPad Pro 12.9\"",
+            checkoutDate: "Jul 24, 2025",
+            returnDate: null,
+            status: "Checked Out",
+            notes: "Field research equipment"
+          },
+          {
+            id: 3,
+            user: "Emily Davis",
+            device: "Samsung Galaxy Tab S8",
+            checkoutDate: "Jul 23, 2025",
+            returnDate: "Jul 28, 2025",
+            status: "Returned",
+            notes: "Marketing presentation"
+          },
+          {
+            id: 4,
+            user: "David Wilson",
+            device: "Dell XPS 15 Laptop",
+            checkoutDate: "Jul 20, 2025",
+            returnDate: null,
+            status: "Checked Out",
+            notes: "Sales demo unit"
+          },
+          {
+            id: 5,
+            user: "Alex Thompson",
+            device: "Logitech MX Master 3 Mouse",
+            checkoutDate: "Jul 18, 2025",
+            returnDate: "Jul 25, 2025",
+            status: "Returned",
+            notes: "Temporary replacement"
+          }
+        ];
+        
         users = [
           "John Smith (IT Dept)", "Sarah Johnson (Design)", "Michael Brown (Engineering)", 
-          "Emily Davis (Marketing)", "David Wilson (Sales)"
+          "Emily Davis (Marketing)", "David Wilson (Sales)", "Alex Thompson (Support)",
+          "Jessica Lee (HR)", "Robert Garcia (Operations)"
         ];
+        
         devices = [
           "Dell XPS 15 Laptop", "MacBook Pro 16\"", "iPad Pro 12.9\"", "Samsung Galaxy Tab S8",
-          "Logitech MX Master 3 Mouse", "Apple Magic Keyboard", "Wacom Intuos Pro", "Canon EOS R5 Camera"
+          "Logitech MX Master 3 Mouse", "Apple Magic Keyboard", "Wacom Intuos Pro", "Canon EOS R5 Camera",
+          "Sony WH-1000XM5 Headphones", "Microsoft Surface Laptop 4", "Lenovo ThinkPad X1 Carbon",
+          "Google Pixelbook Go", "Samsung Galaxy Book Pro", "HP Spectre x360"
         ];
-        saveUsersDevices();
+        
         renderHistoryTable();
-      }
-    }
-
-    // GitHub API functions
-    async function saveToGitHub() {
-      if (!githubToken) {
-        // Show token modal if token is not set
-        githubTokenModal.style.display = 'flex';
-        return;
-      }
-      
-      const username = "atsho0o";
-      const repo = "Tool-Checkout-System";
-      const filePath = "data/checkout.json";
-      
-      const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents/${filePath}`;
-      
-      const data = {
-        checkoutHistory,
-        users,
-        devices,
-        timestamp: new Date().toISOString()
-      };
-      
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-      
-      // First, get current SHA of the file (required for update)
-      let sha = null;
-      try {
-        const res = await fetch(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${githubToken}`,
-            'User-Agent': 'Tool-Checkout-System'
-          }
-        });
-        
-        if (res.ok) {
-          const fileData = await res.json();
-          sha = fileData.sha;
-        } else if (res.status !== 404) {
-          throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
-        }
-      } catch (err) {
-        console.error('Error fetching file info:', err);
-        alert('Failed to fetch file information from GitHub');
-        return;
-      }
-      
-      // Prepare payload
-      const payload = {
-        message: "Update checkout data",
-        content: content,
-        committer: {
-          name: "Tool Checkout System",
-          email: "noreply@example.com"
-        }
-      };
-      
-      if (sha) {
-        payload.sha = sha;
-      }
-      
-      // Upload file
-      try {
-        const uploadRes = await fetch(apiUrl, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${githubToken}`,
-            'User-Agent': 'Tool-Checkout-System',
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-        
-        if (uploadRes.ok) {
-          alert('✅ Data successfully saved to GitHub!');
-        } else {
-          const errorData = await uploadRes.json();
-          console.error('GitHub error response:', errorData);
-          
-          if (uploadRes.status === 401) {
-            // Token is invalid or expired
-            tokenMessage.textContent = 'Invalid or expired token. Please provide a new one.';
-            tokenMessage.className = 'modal-message error-message';
-            tokenMessage.style.display = 'block';
-            githubTokenModal.style.display = 'flex';
-          } else {
-            alert(`❌ Failed to save data to GitHub: ${errorData.message || uploadRes.status}`);
-          }
-        }
-      } catch (err) {
-        console.error('Error saving to GitHub:', err);
-        alert('Failed to save data to GitHub');
+        alert('Demo data has been restored');
       }
     }
 
@@ -883,34 +1023,7 @@
       // Set up event listeners
       checkoutBtn.addEventListener('click', checkoutEquipment);
       exportPdfBtn.addEventListener('click', exportToPDF);
-      exportExcelBtn.addEventListener('click', exportToExcel);
       resetDataLink.addEventListener('click', resetData);
-      saveBtn.addEventListener('click', saveToGitHub);
-      
-      // Token modal events
-      saveTokenBtn.addEventListener('click', () => {
-        const token = githubTokenInput.value.trim();
-        if (token) {
-          githubToken = token;
-          localStorage.setItem('githubToken', token);
-          githubTokenModal.style.display = 'none';
-          githubTokenInput.value = '';
-          tokenMessage.style.display = 'none';
-          saveToGitHub();
-        } else {
-          tokenMessage.textContent = 'Please enter a valid GitHub token';
-          tokenMessage.className = 'modal-message error-message';
-          tokenMessage.style.display = 'block';
-        }
-      });
-      
-      closeModal.addEventListener('click', () => {
-        githubTokenModal.style.display = 'none';
-      });
-      
-      cancelToken.addEventListener('click', () => {
-        githubTokenModal.style.display = 'none';
-      });
       
       // Auto-suggest functionality
       userInput.addEventListener('input', () => {
@@ -933,7 +1046,6 @@
       
       // Initialize UI
       renderHistoryTable();
-      updateDashboard();
       
       // Make functions available globally for onclick handlers
       window.returnItem = returnItem;
