@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tool Checkout Form & Dashboard</title>
   <style>
     :root {
@@ -120,7 +120,7 @@
 
       <button type="submit">Submit</button>
       <div id="feedback"></div>
-    </form>
+       </form>
 
     <h2>Dashboard</h2>
     <div id="dashboard">Loading...</div>
@@ -128,30 +128,21 @@
 
   <script>
   // ▶️ Replace this URL with your *deployed* Apps Script Web App URL
-  const scriptURL = 'https://script.google.com/macros/s/AKfycby3csTU0ebmtjgQtGcrUl4X2VK--izue1GeCKTwljf4ttfqXAx5U0b0hZ6EAPOKSiYkMw/exec';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbzp0RnbTw35ns78VpfofAub9KXhuMGUfGFWmCNoNbottiKs132J6qtIq1AwJolpLdNepQ/exec';
+ document.getElementById('date').valueAsDate = new Date();
 
-  // set today's date as default
-  document.getElementById('date').valueAsDate = new Date();
-
-  // handle form submission
+  // Submit using FormData to avoid preflight
   document.getElementById('dataForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const feedback = document.getElementById('feedback');
     feedback.textContent = '';
 
-    const payload = {
-      name: this.name.value,
-      item: this.item.value,
-      company: this.company.value,
-      date: this.date.value,
-      comment: this.comment.value
-    };
+    const formData = new FormData(this);
 
     fetch(scriptURL, {
       method: 'POST',
       mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: formData
     })
     .then(res => res.json())
     .then(json => {
@@ -172,7 +163,6 @@
     });
   });
 
-  // fetch and render dashboard
   function loadDashboard() {
     fetch(scriptURL, { method: 'GET', mode: 'cors' })
       .then(res => res.json())
@@ -196,6 +186,5 @@
       });
   }
 
-  // initial load
   loadDashboard();
   </script>
