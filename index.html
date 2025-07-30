@@ -97,10 +97,8 @@
       <label for="item">Item:</label>
       <input list="items" id="item" name="item" required>
       <datalist id="items">
-        <option value="Hammer"></option>
-        <option value="Screwdriver"></option>
-        <option value="Wrench"></option>
-        <!-- Add more items here -->
+        <option value="Mouse+keyboard wireless"></option>
+        <!-- add your items here -->
       </datalist>
 
       <label for="company">Company:</label>
@@ -129,12 +127,13 @@
   </div>
 
   <script>
-  // Replace with your deployed Apps Script URL
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbzAwGC8GCudF5BRerkHmuIQkqw355kXdv8ELBA6zc-AXe8rpDh1b7F9K9-Kv1NCVnN5tA/exec';
+  // ▶️ Replace this URL with your *deployed* Apps Script Web App URL
+  const scriptURL = 'https://script.google.com/macros/s/AKfycby3csTU0ebmtjgQtGcrUl4X2VK--izue1GeCKTwljf4ttfqXAx5U0b0hZ6EAPOKSiYkMw/exec';
 
+  // set today's date as default
   document.getElementById('date').valueAsDate = new Date();
 
-  // Submit form data
+  // handle form submission
   document.getElementById('dataForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const feedback = document.getElementById('feedback');
@@ -155,42 +154,48 @@
       body: JSON.stringify(payload)
     })
     .then(res => res.json())
-    .then(() => {
-      feedback.className = 'success';
-      feedback.textContent = '✔️ Submitted successfully!';
-      document.getElementById('dataForm').reset();
-      document.getElementById('date').valueAsDate = new Date();
-      loadDashboard(); // Refresh dashboard
+    .then(json => {
+      if (json.result === 'Success') {
+        feedback.className = 'success';
+        feedback.textContent = '✔️ Submitted successfully!';
+        this.reset();
+        document.getElementById('date').valueAsDate = new Date();
+        loadDashboard();
+      } else {
+        throw new Error(json.error);
+      }
     })
-    .catch(() => {
+    .catch(err => {
+      console.error(err);
       feedback.className = 'error';
       feedback.textContent = '❌ Error submitting data.';
     });
   });
 
-  // Load dashboard data
+  // fetch and render dashboard
   function loadDashboard() {
-    fetch(scriptURL, { mode: 'cors' })
+    fetch(scriptURL, { method: 'GET', mode: 'cors' })
       .then(res => res.json())
       .then(data => {
         const dash = document.getElementById('dashboard');
-        if (!data.length) return dash.textContent = 'No records found.';
-        // Build table
+        if (!Array.isArray(data) || data.length === 0) {
+          dash.textContent = 'No records found.';
+          return;
+        }
         const headers = Object.keys(data[0]);
-        const rows = data.map(r => headers.map(h => r[h]));
-
         let html = '<table>\n<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>\n<tbody>';
-        rows.forEach(r => {
-          html += '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>';
+        data.forEach(row => {
+          html += '<tr>' + headers.map(h => `<td>${row[h] || ''}</td>`).join('') + '</tr>';
         });
         html += '</tbody>\n</table>';
         dash.innerHTML = html;
       })
-      .catch(() => {
+      .catch(err => {
+        console.error(err);
         document.getElementById('dashboard').textContent = 'Failed to load data.';
       });
   }
 
-  // Initial dashboard load
+  // initial load
   loadDashboard();
   </script>
