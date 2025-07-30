@@ -124,22 +124,17 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxD9KAP2VTOwKS0r31crc1MwrenT_ScLmu5A4b-YovlIAq0GyGK1G9ocmLvwqzICceKFA/exec";
+const scriptURL = 'https://script.google.com/macros/s/AKfycbxBnjQWK__lzdseF4RWy-vnkTLm8AITVJGm1WNFji5aQLjCTqjETHbzVBlAZ_RvVdcu7w/exec'; // Your updated deployed URL
 
-    document.getElementById("date").valueAsDate = new Date();
+fetch(scriptURL, {
+  method: 'POST',
+  mode: 'cors',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(payload)
+})
 
-    // Load item suggestions
-    fetch(scriptURL)
-      .then(res => res.json())
-      .then(data => {
-        const items = [...new Set(data.map(row => row[1]))].filter(i => i);
-        const datalist = document.getElementById("items");
-        items.forEach(item => {
-          const option = document.createElement("option");
-          option.value = item;
-          datalist.appendChild(option);
-        });
-      });
 
     document.getElementById("dataForm").addEventListener("submit", function(e) {
       e.preventDefault();
