@@ -3,26 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sheet Form</title>
+  <title>Data Entry Form</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-    label { display: block; margin-top: 10px; }
-    select, input, textarea { width: 100%; padding: 8px; margin-top: 5px; }
-    button { margin-top: 15px; padding: 10px 20px; }
+    :root {
+      --primary: #4a90e2;
+      --background: #f5f8fa;
+      --input-bg: #ffffff;
+      --text: #333333;
+      --border: #d1d9e6;
+    }
+
+    body {
+      background-color: var(--background);
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text);
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h2 {
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      font-weight: 500;
+      display: block;
+      margin: 1rem 0 0.3rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background-color: var(--input-bg);
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    .success {
+      margin-top: 1rem;
+      text-align: center;
+      color: green;
+      font-weight: bold;
+    }
+
+    .error {
+      margin-top: 1rem;
+      text-align: center;
+      color: red;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Submit Data</h2>
-  <form id="dataForm">
-    <label>Name: <input type="text" id="name" required></label>
-    <label>Item: 
+  <div class="container">
+    <h2>Submit Data to Sheet</h2>
+    <form id="dataForm">
+      <label>Name:</label>
+      <input type="text" id="name" required>
+
+      <label>Item:</label>
       <input list="items" id="item" required>
       <datalist id="items"></datalist>
-    </label>
-    <label>Company:
+
+      <label>Company:</label>
       <select id="company" required>
-        <option value="">--Select--</option>
+        <option value="">-- Select Company --</option>
         <option>Mesco</option>
         <option>Euroshipping</option>
         <option>Altun</option>
@@ -30,23 +111,27 @@
         <option>Globelink</option>
         <option>Saco</option>
       </select>
-    </label>
-    <label>Date: <input type="date" id="date" required></label>
-    <label>Comment: <textarea id="comment"></textarea></label>
-    <button type="submit">Submit</button>
-  </form>
+
+      <label>Date:</label>
+      <input type="date" id="date" required>
+
+      <label>Comment:</label>
+      <textarea id="comment"></textarea>
+
+      <button type="submit">Submit</button>
+      <div id="feedback"></div>
+    </form>
+  </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxVHqAP5s9T2PzUEtMep0OWj8r9pSIiv6WRxYuDDGfDpnrADMCctDERev5PLsfTHBDp0A/exec"; // Replace with your Apps Script URL
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxVHqAP5s9T2PzUEtMep0OWj8r9pSIiv6WRxYuDDGfDpnrADMCctDERev5PLsfTHBDp0A/exec"; // Replace with your actual script URL
 
-    // Auto-fill today's date
     document.getElementById("date").valueAsDate = new Date();
 
-    // Fetch existing items
     fetch(scriptURL)
       .then(res => res.json())
       .then(data => {
-        const items = [...new Set(data.map(row => row[1]))].filter(i => i); // Unique item names
+        const items = [...new Set(data.map(row => row[1]))].filter(i => i);
         const datalist = document.getElementById("items");
         items.forEach(item => {
           const option = document.createElement("option");
@@ -57,6 +142,9 @@
 
     document.getElementById("dataForm").addEventListener("submit", function(e) {
       e.preventDefault();
+      const feedback = document.getElementById("feedback");
+      feedback.textContent = "";
+
       const payload = {
         name: document.getElementById("name").value,
         item: document.getElementById("item").value,
@@ -64,14 +152,23 @@
         date: document.getElementById("date").value,
         comment: document.getElementById("comment").value
       };
+
       fetch(scriptURL, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' }
       })
       .then(res => res.json())
-      .then(() => alert("Data submitted successfully!"))
-      .catch(err => alert("Error submitting data."));
+      .then(() => {
+        feedback.className = "success";
+        feedback.textContent = "✔️ Submitted successfully!";
+        document.getElementById("dataForm").reset();
+        document.getElementById("date").valueAsDate = new Date();
+      })
+      .catch(() => {
+        feedback.className = "error";
+        feedback.textContent = "❌ Error submitting data.";
+      });
     });
   </script>
 </body>
