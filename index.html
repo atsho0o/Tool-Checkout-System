@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Data Entry Form</title>
+  <title>Tool Checkout Form</title>
   <style>
     :root {
       --primary: #4a90e2;
@@ -92,7 +92,7 @@
 <body>
 
   <div class="container">
-    <h2>Submit Data to Sheet</h2>
+    <h2>Tool Checkout</h2>
     <form id="dataForm">
       <label>Name:</label>
       <input type="text" id="name" required>
@@ -124,10 +124,11 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxVHqAP5s9T2PzUEtMep0OWj8r9pSIiv6WRxYuDDGfDpnrADMCctDERev5PLsfTHBDp0A/exec"; // Replace with your actual script URL
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxVHqAP5s9T2PzUEtMep0OWj8r9pSIiv6WRxYuDDGfDpnrADMCctDERev5PLsfTHBDp0A/exec";
 
     document.getElementById("date").valueAsDate = new Date();
 
+    // Load item suggestions
     fetch(scriptURL)
       .then(res => res.json())
       .then(data => {
@@ -145,18 +146,16 @@
       const feedback = document.getElementById("feedback");
       feedback.textContent = "";
 
-      const payload = {
-        name: document.getElementById("name").value,
-        item: document.getElementById("item").value,
-        company: document.getElementById("company").value,
-        date: document.getElementById("date").value,
-        comment: document.getElementById("comment").value
-      };
+      const formData = new URLSearchParams();
+      formData.append("name", document.getElementById("name").value);
+      formData.append("item", document.getElementById("item").value);
+      formData.append("company", document.getElementById("company").value);
+      formData.append("date", document.getElementById("date").value);
+      formData.append("comment", document.getElementById("comment").value);
 
       fetch(scriptURL, {
         method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' }
+        body: formData
       })
       .then(res => res.json())
       .then(() => {
